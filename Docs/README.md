@@ -1,70 +1,115 @@
+**Name: Hoda Shoghi**
 
-# Predictive Reataturant Rating Project
-NOTE: I have 3Notebooks of EDA , 1 is all the features including cities, the other one all features without the cities , and the last one only checking correlation between cities and targetvar. 
+**Contact: hoda.shoghi@gmail.com**
 
-**May be check the one with cities first !!**
+**Date: 05 Sep 2023**
 
-This repository hosts a predictive analytics project, aiming to harness the power of machine learning to understand and predict outcomes based on a given dataset. The project integrates various steps of the data science pipeline, including an extensive exploratory data analysis (EDA) and the application of machine learning models.
+
+# Introduction
+
+### Project Title: 
+
+# Predicting Restaurant Ratings: A Data-Driven Approach
+
+# Goal
+
+My goal is to build a predictive model that can accurately predict a restaurant's star rating by leveraging the vast amount of information in the dataset. This model can provide prospective Steakholders with insights into how certain factors might influence their new establishment's ratings.
+
+# Dataset-Overview
+The Yelp dataset offers a wealth of information about businesses across several cities. This project focuses specifically on restaurant businesses. The dataset includes attributes such as business ID, name, location, review count, categories, and star ratings.
+
+You can dowload this dataset at https://www.yelp.com/dataset
+
+| COLUMN NAME  | DESCRIPTION                                                    | DATA TYPE |
+|--------------|----------------------------------------------------------------|-----------|
+| business_id  | Unique identifier for the business                             | string    |
+| name         | Name of the business                                           | string    |
+| address      | Address where the business is located                          | string    |
+| city         | City where the business is located                             | string    |
+| state        | State where the business is located                            | string    |
+| postal_code  | postal_code where the business is located                      | string    |
+| latitude     | Geographical latitude of the business                          | float64   |
+| longitude    | Geographical longitude of the business                         | float64   |
+| stars        | Star rating of the business                                    | float64   |
+| review_count |  Number of reviews the business has received                   | int64     |
+| is_open      | 0 is closed and 1 is open                                      | int64     |
+| attributes   | Dict-different attribute like payment method,  , etc | string  |
+| categories   | Categories the business falls under                            | string    |
+| hours        | Dict-Hours of operation                                        | string    |
+
+
+#### Data Notes :
+1- Yelp's dataset covers various types of businesses. For this project, I focus on businesses categorized as "Restaurants".
+
+2- The `categories` column can contain multiple categories for a single business. For example, a restaurant can be categorized as both 'Italian' and 'Pizza'.
+
+3- Yelp users rate businesses on a scale of 1 to 5 stars. This serves as our target variable, which we aim to predict with our model.
+
+4- `attribute` Column contains dictionary of different attributes and their values
+
+5- There are some nested dictionaries inside `attributes` Column like `Ambience` or `Business Parking`
+
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Exploratory Data Analysis (EDA)](#exploratory-data-analysis-eda)
-  - [Data Cleaning](#data-cleaning)
-  - [Feature Engineering](#feature-engineering)
-  - [Visualizations](#visualizations)
-  - [Statistical Analysis](#statistical-analysis)
-  - [Data Transformation](#data-transformation)
-  - [Insights and Observations](#insights-and-observations)
-- [Modeling](#modeling)
-  - [Logistic Regression](#logistic-regression)
-  - [Decision Trees](#decision-trees)
-- [Future Work](#future-work)
-- [Contributions](#contributions)
-- [License](#license)
+1. [**Introduction**](#Introduction)
+    * [Dataset Overview](#Dataset-Overview)
+    * [Goal](#Goal)
+2. [**Basic Data Wrangling**](#Basic-Data-Wrangling)
+    * [Dataset Shape](#Dataset-Shape)
+    * [Data Types & Distribution](#Data-Types-&-Distribution)
+    * [Duplicates & Redundancy](#Duplicates-&-Redundancy)
+    * [Null Value Handling](#Null-Value-Handling)
+    * [Feature Removal](#Feature-Removal)
+        * ["is_open" Column](#is_open-Column)
+        * ["state" Column](#state-Column)
+    * [Target Variable Analysis](#Target-Variable-Analysis)
+        * [Descriptive Statistics for "stars"](#Descriptive-Statistics-for-stars)
+        * [Transforming the "stars" column into a binary variable](#Transforming-stars)
+    * [Missing Values in "categories" and "attributes"](#Missing-Values)
+    * ["categories" Column Processing](#categories-Column-Processing)
+        * [Standardization](#Standardization)
+        * [Filtering for restaurants](#Filtering-for-restaurants)
+        * [Category Flattening](#Category-Flattening)
+        * [One-Hot Encoding](#One-Hot-Encoding)
+        * [Handling Low-Count Categories](#Handling-Low-Count-Categories)
+    * [Correlation Analysis](#Correlation-Analysis)
+        * [Identifying Highly Correlated Variable Pairs](#Identifying-Highly-Correlated)
+        * [Handling Highly Correlated Variables](#Handling-Highly-Correlated-Variables)
+4. [**Attribute Column Analysis**](#Attribute-Column-Analysis)
 
-## Introduction
+5. [Checking for Duplicate Information](#Duplicate-Information)
+    . [Finding Redundant Columns](#Finding-Redundant-Columns)
+6. [Data Conversion](#Converting-binary-columns-to-uint8)
 
-Provide a brief overview of the project's goal, the dataset in use, and its significance.
+7. [Correlation Analysis](#Correlation-Analysis)
+8. [Saving cleaned data to csv](#Saving-the-cleaned-data)
+MODELING :
+9. [Logistic Regression](#logistic-regression)
+    - [RandomizedSearchCV](#logistic-regression)
+    - [GridSearchCV](#GridSearchCV) 
+    - [Logistic Regression-L2](#Logistic-regression-L2)
+    - [Cross-Validation](#Cross-Validation)
+    - [Classification Report](#ClassificationReport)
+    - [Confusion Matrix](#Confusion-Matrix)
+    - [ROC](#ROC)
+    - [Precision-Recall Curve](#Precision-Recall-Curve)
+    - [Feature Coefficients](#Feature-Coefficients)
 
-## Exploratory Data Analysis (EDA)
+10. [Random Forest](#Random-forest) 
+    - [Random Forest Classification report](#Random-Forest-Classification-report) 
 
-Exploratory Data Analysis, or EDA, is a foundational step in our project, aiming to visually and statistically uncover the primary characteristics and patterns within the dataset.
+    - [Feature_importances & Model Refinement with Random Forest](#Feature_importances-&-Model-Refinement-with-Random-Forest) 
+11. [Gradient Boosting (GBM)](#Gradient-boosting-gbm)
+    - [PipeLine for  GradientBoostingClassifier](#PipeLine-for-GradientBoostingClassifier)
+12. [XGBoost](#Xgboost) 
+    - [PipeLine for XGboost](#PipeLine-for-XGboost) 
+    - [XGboost Confusion_matrix](#XGboost-Confusion_matrix)
+    - [Feature Mean Differences Analysis](#Feature-Mean-Differences-Analysis)
+    - [SHAP Analysis for XGBoost](#SHAP-Analysis-for-XGBoost)
+13. [Conclusion](#Conclusion)
 
-### Data Cleaning
-- Addressed missing values.
-- Detected and rectified outliers using visual tools such as box plots.
+ 
 
-### Feature Engineering
-- Derived new features to strengthen the modeling process.
-- Selected pertinent features based on their correlation with the target variable.
 
-### Visualizations
-- Used histograms for understanding individual variable distributions.
-- Employed scatter plots to discern relationships and potential patterns.
-- Leveraged box plots for understanding spread and detecting outliers.
-- Incorporated heatmaps to visualize correlations between variables.
-
-### Statistical Analysis
-- Conducted hypothesis testing to validate observations.
-- Applied ANOVA for discerning differences across various groups.
-
-### Data Transformation
-- Normalized and standardized features.
-- Efficiently encoded categorical variables.
-
-### Insights and Observations
-- Drew data-driven insights crucial for business decisions.
-
-## Modeling
-
-### Logistic Regression
-Currently, the Logistic Regression model serves as the project's foundation. It is being tuned and validated for the best performance.
-
-### Decision Trees
-The Decision Tree model is under experimentation to understand and predict the outcomes.
-
-## Future Work
-
-We are planning to expand our model arsenal by experimenting with Random Forests, applying PCA for dimensionality reduction, employing cross-validation for better model validation, and integrating pipelines and hyperparameter optimization.
 
